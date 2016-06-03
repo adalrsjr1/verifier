@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://logging.apache.org/log4j/2.x/manual/configuration.html -->
+<Configuration status="INFO">
+	<Appenders>
+		<!-- https://logging.apache.org/log4j/2.x/manual/appenders.html#JeroMQAppender -->
+		<!-- <JeroMQ name="JeroMQAppender"> -->
+			<!-- <Property name="endpoint">tcp://localhost:5556</Property> -->
+			<!-- https://logging.apache.org/log4j/2.x/manual/layouts.html -->
+			<!-- <JsonLayout locationInfo="false" complete="false" compact="true"  
+				eventEol="true"/> -->
+		<!-- </JeroMQ> -->
+		<Console name="Console" target="SYSTEM_OUT">
+			<!-- https://marketplace.eclipse.org/content/ansi-escape-console -->
+			<!-- https://logging.apache.org/log4j/2.x/manual/layouts.html#PatternLayout -->
+			<PatternLayout pattern="%d{UNIX} [%t] %highlight{%-5level}{STYLE=logback} 
+				%logger{36} - %msg%n" />
+		</Console>
+		<File name="LogFile" fileName="src/main/resources/logs/all.log"
+			immediateFlush="false" append="false">
+			<PatternLayout pattern="%d{UNIX} [%t] %-5level %logger{36} - %msg%n" />
+		</File>
+	</Appenders>
+	<Loggers>
+		<!-- additivity attribute allows show message in ROOT logger -->
+		<Logger name="com.adalrsjr.App" level="ALL" additivity="true">
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<!-- <Logger name="com.adalrsjr.processor_unit.fluentd.subscriber.TraceSubscriber" level="ALL">
+			<AppenderRef ref="JeroMQAppender" />
+		</Logger> -->
+		<Root level="ALL">
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
+</Configuration>

@@ -1,0 +1,29 @@
+<source>
+  @type tail
+  path /home/adalrsjr1/system.trace
+  pos_file /var/log/td-agent/system.trace.pos
+  tag trace.log.zmq
+  format /(?<timestamp>[0-9.]+)T((?<req_host_src>([0-9.]{4}){3}[0-9]{3}).(?<req_port_src>[0-9]+).(?<req_host_dst>([0-9.]{4}){3}[0-9]{3}).(?<req_port_dst>[0-9]+). (?<req_method>(GET|POST|DELETE|UPDATE)) (?<request>.*)(?<req_protocol>HTTP.1.[1.2]+)|(?<res_host_src>([0-9.]{4}){3}[0-9]{3}).(?<res_port_src>[0-9]+).(?<res_host_dst>([0-9.]{4}){3}[0-9]{3}).(?<res_port_dst>[0-9]+). (?<res_protocol>HTTP.1.[12]+) (?<response>[0-9]{3}) (?<res_message>[a-zA-Z]*))$/
+  time_key @timestamp
+  time_format %s
+</source>
+
+<source>
+  type zmq_sub
+  publisher tcp://127.0.0.1:5557
+  subkey trace.
+  bulk_send false
+</source>
+
+<match trace.**>
+  type zmq_pub
+  pubkey ${tag}
+  bindaddr tcp://0.0.0.0:5558
+  flush_interval 0s
+  bulk_send false
+</match>
+
+<match trace.**>
+  type stdout
+</match>
+

@@ -1,0 +1,7 @@
+# to test fluentd regex (docker version)
+  + https://github.com/Tomohiro/fluentular
+
+# zeromq plugin fluentd (install from gem created compiling this source)
+  + https://github.com/ogibayashi/fluent-plugin-zmq-pub
+
+
