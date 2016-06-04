@@ -18,13 +18,12 @@ import groovy.util.logging.Slf4j;
 
 @Slf4j
 class TracePublisher implements Runnable, IPublisher  {
-	private Context context = ZMQ.context(1)
+	private Context context = ZMQ.context(10)
 	private Socket publisher = context.socket(ZMQ.PUB)
 
 	private stopped = false
-	private static final ThreadFactory subThreadFactory = new ThreadFactoryBuilder().setNameFormat("log-publisher-%d").build()
+	private static final ThreadFactory subThreadFactory = new ThreadFactoryBuilder().setNameFormat("log-publisher").build()
 	private static final ExecutorService tPublisher = Executors.newSingleThreadExecutor(subThreadFactory)
-	static final int tCount = 0
 
 	private static final BlockingQueue<Map> queue = new LinkedBlockingQueue<>()
 
@@ -51,14 +50,16 @@ class TracePublisher implements Runnable, IPublisher  {
 		if(INSTANCE == null) {
 			INSTANCE = new TracePublisher(host, port, parser, topic)
 			tPublisher.execute(INSTANCE)
-			tCount++
 		}
 		return INSTANCE
+	}
+	
+	TracePublisher getInstance() {
+		INSTANCE
 	}
 
 	void stop() {
 		stopped = true
-		tCount--
 	}
 
 	@Override
@@ -83,6 +84,7 @@ class TracePublisher implements Runnable, IPublisher  {
 		finally {
 			publisher.close()
 			context.term()
+			queue.clear()
 		}
 	}
 

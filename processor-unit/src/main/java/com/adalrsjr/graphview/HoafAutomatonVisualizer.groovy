@@ -2,23 +2,25 @@ package com.adalrsjr.graphview
 
 import java.awt.Color
 
+import javax.swing.JFrame;
+
 import jhoafparser.storage.StoredAutomaton
 import jhoafparser.storage.StoredEdgeWithLabel
 import jhoafparser.storage.StoredState
 
 import com.adalrsjr.graphview.InternalGraph.EdgeWrapper
-import com.adalrsjr.processor_unit.processor.hoafautomaton.HoafAutomaton;
+import com.adalrsjr.processor_unit.processor.hoafautomaton.HoafAutomatonProcessorUnit;
 import com.adalrsjr.processor_unit.processor.hoafautomaton.IHoafAutomatonListener;
 
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph
 import edu.uci.ics.jung.graph.Graph
 import edu.uci.ics.jung.graph.util.EdgeType
 
-class HoafAutomatonVisualizer extends InternalGraph<Integer, String, HoafAutomaton> 
+class HoafAutomatonVisualizer extends InternalGraph<Integer, String, HoafAutomatonProcessorUnit> 
 							  implements IHoafAutomatonListener {
-	private HoafAutomaton context
+	private HoafAutomatonProcessorUnit context
 
-	HoafAutomatonVisualizer(HoafAutomaton context) {
+	HoafAutomatonVisualizer(HoafAutomatonProcessorUnit context) {
 		this.context = context
 	}
 	
@@ -65,6 +67,10 @@ class HoafAutomatonVisualizer extends InternalGraph<Integer, String, HoafAutomat
 	public void reachNewState(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState,
 			Map event) {
 		jFrame.repaint()
+	}
+
+	public void stop() {
+		jFrame.setVisible(false)
 	}
 
 }

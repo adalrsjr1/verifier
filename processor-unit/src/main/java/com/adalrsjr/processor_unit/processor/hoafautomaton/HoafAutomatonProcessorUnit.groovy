@@ -1,27 +1,25 @@
 package com.adalrsjr.processor_unit.processor.hoafautomaton
 
-import java.util.Map
-
-import com.adalrsjr.graphview.HoafAutomatonVisualizer
-import com.adalrsjr.processor_unit.fluentd.pubsub.IPublisher;
-import com.adalrsjr.processor_unit.processor.IProcessorUnit;
-
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
-import groovy.util.logging.Slf4j;
-import jhoafparser.ast.BooleanExpression;
-import jhoafparser.consumer.HOAConsumerPrint
+import groovy.util.logging.Slf4j
+import jhoafparser.ast.BooleanExpression
 import jhoafparser.consumer.HOAConsumerStore
 import jhoafparser.parser.HOAFParser
 import jhoafparser.storage.StoredAutomaton
 
+import com.adalrsjr.graphview.HoafAutomatonVisualizer
+import com.adalrsjr.processor_unit.fluentd.pubsub.IPublisher
+import com.adalrsjr.processor_unit.processor.IProcessorUnit
+
 interface IHoafAutomatonListener {
 	void reachNewState(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event)
+	void stop()
 }
 
 @Slf4j
 @CompileStatic
-class HoafAutomaton implements IProcessorUnit {
+class HoafAutomatonProcessorUnit implements IProcessorUnit {
 	private static final String LTL_GENERATOR = "ltl2tgba"
 	private static final String LTL_GENERATOR_ARGS = "--ba"
 
@@ -34,8 +32,7 @@ class HoafAutomaton implements IProcessorUnit {
 	
 	private IPublisher publisher
 	
-	HoafAutomaton(String property, IPublisher publisher) {
-		this.publisher = publisher
+	HoafAutomatonProcessorUnit(String property) {
 		ProcessBuilder builder = new ProcessBuilder(LTL_GENERATOR, LTL_GENERATOR_ARGS, property)
 		Process process = builder.start()
 
@@ -44,14 +41,23 @@ class HoafAutomaton implements IProcessorUnit {
 
 		process.waitForProcessOutput(out, System.err)
 
-
-
 		HOAConsumerStore consumerStore = new HOAConsumerStore()
 //				HOAFParser.parseHOA(input, new HOAConsumerPrint(System.out))
 		HOAFParser.parseHOA(input, consumerStore)
 		storedAutomaton = consumerStore.getStoredAutomaton()
 	}
 
+	@Override
+	void setPublisher(IPublisher publisher) {
+		this.publisher = publisher
+	}
+	
+	@Override
+	IPublisher getPublisher() {
+		publisher
+	}
+	
+	@Override
 	void publish(Map message) {
 		if(publisher) {
 			publisher.publish(message)
@@ -159,17 +165,26 @@ class HoafAutomaton implements IProcessorUnit {
 		def result = transition(currentState, event)
 		return result
 	}
-
+ 
+	@Override
 	public Object process(Map object) {
 		def init = System.nanoTime()
 		next(object)
 		log.debug "evaluated in ${(System.nanoTime() - init)/1000000} ms"
 	}
 
+	@Override
+	void cleanup() {
+		listeners.each {
+			it.stop()
+		}
+		listeners.clear()
+	}
+	
 	public static void main(String[] args) {
 		//		AutomatonProcessorUnit automaton = ProcessorUnitFactory.createLtlProcessorUnit("G(\"context:REQUEST\"->F\"statusCode:404\")", true)
 		//		HoafAutomaton automaton = new HoafAutomaton("G(\"req_host_src:172.017.000.001\" && \"res_host_dst:172.017.000.006\" -> F \"req_host_dst:172.017.000.001\" && \"res_host_src:172.017.000.006\")")
-		HoafAutomaton automaton = new HoafAutomaton("G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")", null)
+		HoafAutomatonProcessorUnit automaton = new HoafAutomatonProcessorUnit("G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
 //G("req_host_src:172.017.000.001"->F"req_host_dst:172.017.000.006")
 		HoafAutomatonVisualizer visualizer = new HoafAutomatonVisualizer(automaton)
 		automaton.registerListener(visualizer)
@@ -191,4 +206,6 @@ class HoafAutomaton implements IProcessorUnit {
 
 		//		automaton.handle([context:"REQUEST"]);
 	}
+
+	
 }

@@ -14,7 +14,7 @@ class App
 {
 	public static void main( String[] args )
 	{
-		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("processor-unit-%d").build()
+		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("processor-%d").build()
 		Executor tPool = Executors.newCachedThreadPool(threadFactory)
 		
 //		TraceSubscriber subscriber1 = TraceSubscriber.create("localhost", 5556)
