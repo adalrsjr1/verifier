@@ -25,8 +25,8 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 
 	StoredAutomaton storedAutomaton
 
-	private int currentState = 0
-	private long timeInCurrentState = 0
+	protected int currentState = 0
+	protected long timeInCurrentState = 0
 
 	private Set<IHoafAutomatonListener> listeners = [] as Set
 	
@@ -74,7 +74,7 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 		listeners.remove(listener)
 	}
 
-	private void notifyListeners(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event) {
+	protected void notifyListeners(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event) {
 		log.debug "prevState:$prevState nextState:$nextState accState:$isAcceptanceState time:$timeAtPrevState ev:$event"
 		for(listener in listeners) {
 			listener.reachNewState(currentState, currentState, inAcceptanceState, timeInCurrentState, event)
