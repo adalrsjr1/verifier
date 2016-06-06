@@ -22,7 +22,7 @@ class App
 //		HoafAutomaton automaton1 = new HoafAutomaton("G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
 //		processor1.registerProcessorUnit(automaton1)
 		
-		
+		//TODO: Create Processor unit to maintain state - Verify response time
 		
 		IProcessor processor1 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
 		IProcessor processor2 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_method:GET\"->F\"response:200\")")
