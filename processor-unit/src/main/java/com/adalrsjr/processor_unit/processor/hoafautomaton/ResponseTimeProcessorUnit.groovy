@@ -5,9 +5,9 @@ import groovy.util.logging.Slf4j
 
 import com.adalrsjr.processor_unit.fluentd.pubsub.IPublisher
 import com.adalrsjr.processor_unit.processor.ConditionOperator;
-import com.adalrsjr.processor_unit.processor.IProcessorUnit
-import com.adalrsjr.processor_unit.processor.IProcessorUnitEvent
-import com.adalrsjr.processor_unit.processor.IProcessorUnitListener
+import com.adalrsjr.processor_unit.processor.IProcessorUnit;
+import com.adalrsjr.processor_unit.processor.IProcessorUnitEvent;
+import com.adalrsjr.processor_unit.processor.IProcessorUnitListener;
 
 @Immutable
 class ResponseTimeEvent implements IProcessorUnitEvent {

@@ -8,6 +8,7 @@ import com.adalrsjr.processor_unit.Parser
 import com.adalrsjr.processor_unit.ProcessorFactory
 import com.adalrsjr.processor_unit.processor.ConditionOperator
 import com.adalrsjr.processor_unit.processor.Processor
+import com.adalrsjr.util.Configuration
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 
 
@@ -15,6 +16,11 @@ class App
 {
 	public static void main( String[] args )
 	{
+		Configuration c = Configuration.getInstance()
+		String subHost = c.properties["app.trace.subscriber.host"]
+		String pubHost = c.properties["app.trace.publisher.host"]
+		int subPort = c.properties["app.trace.subscriber.port"].toInteger()
+		int pubPort = c.properties["app.trace.publisher.port"].toInteger()
 		ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("processor-%d").build()
 		Executor tPool = Executors.newCachedThreadPool(threadFactory)
 		
@@ -23,11 +29,10 @@ class App
 //		HoafAutomaton automaton1 = new HoafAutomaton("G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
 //		processor1.registerProcessorUnit(automaton1)
 		
-		//TODO: Create Processor unit to maintain state - Verify response time
 		
-//		Processor processor1 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
-//		Processor processor2 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_method:GET\"->F\"response:200\")")
-		Processor processor3 = ProcessorFactory.newTimeResponseProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, 0, ConditionOperator.EQ)
+		Processor processor1 = ProcessorFactory.newHoafAutomatonProcessor(subHost, subPort, pubHost,pubPort, Parser.JSON_PARSER, "G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
+		Processor processor2 = ProcessorFactory.newHoafAutomatonProcessor(subHost, subPort, pubHost, pubPort, Parser.JSON_PARSER, "G(\"req_method:GET\"->F\"response:200\")")
+		Processor processor3 = ProcessorFactory.newTimeResponseProcessor(subHost, subPort, pubHost, pubPort, Parser.JSON_PARSER, 0, ConditionOperator.EQ)
 		
 		processor3.processor.registerListener({e->
 			println ">>> ${e.toString()}"
@@ -43,8 +48,8 @@ class App
 //		visualizer.createGraph()
 //		visualizer.show()
 		
-//		tPool.execute(processor1)
-//		tPool.execute(processor2)
+		tPool.execute(processor1)
+		tPool.execute(processor2)
 		tPool.execute(processor3)
 		
 				

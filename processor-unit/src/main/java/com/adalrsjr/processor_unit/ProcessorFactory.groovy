@@ -8,7 +8,7 @@ import com.adalrsjr.processor_unit.processor.ConditionOperator
 import com.adalrsjr.processor_unit.processor.IProcessor
 import com.adalrsjr.processor_unit.processor.Processor
 import com.adalrsjr.processor_unit.processor.hoafautomaton.HoafAutomatonProcessorUnit
-import com.adalrsjr.processor_unit.processor.hoafautomaton.ResponseTimeProcessorUnit
+import com.adalrsjr.processor_unit.processor.hoafautomaton.ResponseTimeProcessorUnit;
 
 enum Parser {
 	JSON_PARSER
