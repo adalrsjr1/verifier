@@ -59,6 +59,7 @@ class ResponseTimeProcessorUnit implements IProcessorUnit {
 			else {
 				int diffSeconds = message.containsKey("timestamp") ? message["timestamp"].toInteger() : System.currentTimeSeconds()
 				diffSeconds -= state[uuid]
+				state.remove(uuid)
 				if(evaluate(diffSeconds, value, operator))
 					notifyListeners(new ResponseTimeEvent(uuid, diffSeconds))
 			}

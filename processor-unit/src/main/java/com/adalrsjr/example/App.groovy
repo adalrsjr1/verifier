@@ -4,9 +4,10 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 
-import com.adalrsjr.processor_unit.Parser;
+import com.adalrsjr.processor_unit.Parser
 import com.adalrsjr.processor_unit.ProcessorFactory
-import com.adalrsjr.processor_unit.processor.IProcessor
+import com.adalrsjr.processor_unit.processor.ConditionOperator
+import com.adalrsjr.processor_unit.processor.Processor
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 
 
@@ -24,8 +25,13 @@ class App
 		
 		//TODO: Create Processor unit to maintain state - Verify response time
 		
-		IProcessor processor1 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
-		IProcessor processor2 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_method:GET\"->F\"response:200\")")
+//		Processor processor1 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_host_src:172.017.000.001\" && \"req_method:GET\"->F\"req_host_dst:172.017.000.006\" && \"response:200\")")
+//		Processor processor2 = ProcessorFactory.newHoafAutomatonProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, "G(\"req_method:GET\"->F\"response:200\")")
+		Processor processor3 = ProcessorFactory.newTimeResponseProcessor("localhost", 5558, "localhost", 5557, Parser.JSON_PARSER, 0, ConditionOperator.EQ)
+		
+		processor3.processor.registerListener({e->
+			println ">>> ${e.toString()}"
+		})
 		
 //		TraceSubscriber subscriber2 = TraceSubscriber.create("localhost", 5556)
 //		Processor processor2 = new Processor(subscriber2)
@@ -37,9 +43,9 @@ class App
 //		visualizer.createGraph()
 //		visualizer.show()
 		
-		tPool.execute(processor1)
-		tPool.execute(processor2)
-		
+//		tPool.execute(processor1)
+//		tPool.execute(processor2)
+		tPool.execute(processor3)
 		
 				
 	}
