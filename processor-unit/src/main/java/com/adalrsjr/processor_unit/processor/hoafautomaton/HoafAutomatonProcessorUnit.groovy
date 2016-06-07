@@ -1,8 +1,15 @@
 package com.adalrsjr.processor_unit.processor.hoafautomaton
 
 import groovy.transform.CompileStatic
+import groovy.transform.Immutable
 import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
+
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
+import java.util.Map
+import java.util.Set
+
 import jhoafparser.ast.BooleanExpression
 import jhoafparser.consumer.HOAConsumerStore
 import jhoafparser.parser.HOAFParser
@@ -11,14 +18,25 @@ import jhoafparser.storage.StoredAutomaton
 import com.adalrsjr.graphview.HoafAutomatonVisualizer
 import com.adalrsjr.processor_unit.fluentd.pubsub.IPublisher
 import com.adalrsjr.processor_unit.processor.IProcessorUnit
+import com.adalrsjr.processor_unit.processor.IProcessorUnitEvent
+import com.adalrsjr.processor_unit.processor.IProcessorUnitListener
 
-interface IHoafAutomatonListener {
-	void reachNewState(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event)
-	void stop()
+
+//interface IHoafAutomatonListener {
+//	void reachNewStateEvent(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event)
+//	void stop()
+//}
+
+@Immutable
+class HoafEvent implements IProcessorUnitEvent {
+	int prevState
+	int nextState
+	boolean isAcceptanceState
+	long timeAtPrevState
+	Map event
 }
 
 @Slf4j
-@CompileStatic
 class HoafAutomatonProcessorUnit implements IProcessorUnit {
 	private static final String LTL_GENERATOR = "ltl2tgba"
 	private static final String LTL_GENERATOR_ARGS = "--ba"
@@ -28,7 +46,7 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 	protected int currentState = 0
 	protected long timeInCurrentState = 0
 
-	private Set<IHoafAutomatonListener> listeners = [] as Set
+	private Set<IProcessorUnitListener> listeners = [] as Set
 	
 	private IPublisher publisher
 	
@@ -62,22 +80,25 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 		if(publisher) {
 			publisher.publish(message)
 		} else {
-			log.info "need to set a publisher at ${this}"
+			log.warn "need to set a publisher at ${this}"
 		}
 	}
 	
-	void registerListener(IHoafAutomatonListener listener) {
+	@Override
+	void registerListener(IProcessorUnitListener listener) {
 		listeners << listener
 	}
 
-	void unregisterListener(IHoafAutomatonListener listener) {
+	@Override
+	void unregisterListener(IProcessorUnitListener  listener) {
 		listeners.remove(listener)
 	}
 
-	protected void notifyListeners(int prevState, int nextState, boolean isAcceptanceState, long timeAtPrevState, Map event) {
-		log.debug "prevState:$prevState nextState:$nextState accState:$isAcceptanceState time:$timeAtPrevState ev:$event"
+	@Override
+	void notifyListeners(IProcessorUnitEvent event) {
+		log.debug "prevState:${event.prevState} nextState:${event.nextState} accState:${event.isAcceptanceState} time:${event.timeAtPrevState} ev:${event.event}"
 		for(listener in listeners) {
-			listener.reachNewState(currentState, currentState, inAcceptanceState, timeInCurrentState, event)
+			listener.beNotified(event)
 		}
 	}
 
@@ -89,7 +110,7 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 		int prevState = currentState
 		long newTime = System.currentTimeMillis()
 		currentState = state
-		notifyListeners(prevState, state, isInAcceptanceState(), System.currentTimeMillis()-timeInCurrentState, event)
+		notifyListeners(new HoafEvent(prevState, state, isInAcceptanceState(), System.currentTimeMillis()-timeInCurrentState, event))
 		timeInCurrentState = newTime
 	}
 
@@ -173,7 +194,6 @@ class HoafAutomatonProcessorUnit implements IProcessorUnit {
 		log.debug "evaluated in ${(System.nanoTime() - init)/1000000} ms"
 	}
 
-	@Override
 	void cleanup() {
 		listeners.each {
 			it.stop()

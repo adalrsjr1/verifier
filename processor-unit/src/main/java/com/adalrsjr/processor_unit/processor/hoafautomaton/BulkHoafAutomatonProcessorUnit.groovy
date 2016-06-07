@@ -31,7 +31,7 @@ class BulkHoafAutomatonProcessorUnit extends HoafAutomatonProcessorUnit {
 		if(countedEvents > 0 && countedEvents % bulkSize == 0) {
 			log.info "${this} notifying listeners isAcceptanceState == ${isInAcceptanceState()}"
 			if(isInAcceptanceState()) {
-				notifyListeners(prevState, state, isInAcceptanceState(), System.currentTimeMillis()-timeInCurrentState, event)
+				notifyListeners(new HoafEvent(prevState, state, isInAcceptanceState(), System.currentTimeMillis()-timeInCurrentState, event))
 			}
 			else {
 				log.info "not in Acceptance State"	

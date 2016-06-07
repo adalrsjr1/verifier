@@ -21,6 +21,11 @@ interface IProcessorUnit {
 	IPublisher getPublisher()
 	void setPublisher(IPublisher publisher)
 	void cleanup() 
+	
+	void registerListener(IProcessorUnitListener listener)
+	void unregisterListener(IProcessorUnitListener listener)
+	void notifyListeners(IProcessorUnitEvent event)
+	
 }
 
 @Slf4j
